@@ -1,0 +1,105 @@
+1. HTML-разметка
+Для обеспечения доступности используются специальные роли (role), а также связи между кнопками и панелями через ID и атрибуты aria-controls и aria-labelledby
+.
+<div class="tabs">
+  <!-- Заголовок для контекста -->
+  <h3 id="tabs-title">Выберите категорию</h3>
+
+  <!-- Контейнер кнопок с ролью tablist -->
+  <div class="tabs-buttons" role="tablist" aria-labelledby="tabs-title">
+    <button
+      role="tab"
+      id="tab-1"
+      aria-selected="true"
+      aria-controls="panel-1"
+      class="tabs-button is-active"
+      tabindex="0">
+      Вкладка 1
+    </button>
+    <button
+      role="tab"
+      id="tab-2"
+      aria-selected="false"
+      aria-controls="panel-2"
+      class="tabs-button"
+      tabindex="-1">
+      Вкладка 2
+    </button>
+  </div>
+
+  <!-- Панели контента с ролью tabpanel -->
+  <div
+    role="tabpanel"
+    id="panel-1"
+    aria-labelledby="tab-1"
+    class="tabs-content is-active"
+    tabindex="0">
+    <p>Контент первой вкладки</p>
+  </div>
+  <div
+    role="tabpanel"
+    id="panel-2"
+    aria-labelledby="tab-2"
+    class="tabs-content"
+    tabindex="0"
+    hidden>
+    <p>Контент второй вкладки</p>
+  </div>
+</div>
+Примечание: tabindex="0" для tabpanel рекомендуется добавлять, если внутри панели нет других интерактивных элементов, чтобы пользователь мог сфокусироваться на самом контенте
+.
+2. JavaScript (Логика обновления)
+В методе updateUI необходимо динамически изменять состояния и свойства при переключении
+:
+function updateUI(activeButton, activePanel) {
+  // 1. Управление классами видимости
+  buttons.forEach(btn => btn.classList.remove('is-active'));
+  panels.forEach(p => p.classList.remove('is-active'));
+
+  activeButton.classList.add('is-active');
+  activePanel.classList.add('is-active');
+
+  // 2. Обновление ARIA-состояний
+  buttons.forEach(btn => {
+    const isActive = btn === activeButton;
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+
+    // 3. Управление фокусом (клавиша Tab переходит только на активную кнопку)
+    btn.setAttribute('tabindex', isActive ? '0' : '-1');
+  });
+}
+3. CSS (Стилизация и адаптация)
+Источник предлагает использовать современные свойства для улучшения визуального отклика и поддержки режимов высокой контрастности
+.
+/* Оптимизация кликов для активной кнопки */
+.tabs-button.is-active {
+  pointer-events: none; /* Чтобы не кликать повторно по активной вкладке */
+  color: blue;
+}
+
+/* Улучшенный фокус */
+.tabs-button:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 1px; /* Смещение обводки для лучшей видимости */
+}
+
+/* Поддержка режима повышенной контрастности */
+@media (prefers-contrast: more) {
+  .tabs-button.is-active {
+    border-top-width: 4px;
+    border-left-width: 2px;
+    border-right-width: 2px;
+    margin-top: -4px; /* Компенсация смещения */
+  }
+
+  .tabs-button:not(.is-active) {
+    border-width: 1px;
+  }
+}
+Важные правила реализации из урока:
+Навигация: Кнопки переключаются стрелками (влево/вправо), а не клавишей Tab
+.
+Дополнительные клавиши: Клавиша Home должна переносить фокус на первую вкладку, а End — на последнюю
+.
+Связь: Обязательно используйте aria-controls на кнопке, чтобы указать, какой панелью она управляет
+.
